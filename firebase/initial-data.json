@@ -1,0 +1,21 @@
+{
+  "voltix": {
+    "config": {
+      "tariffPerKwh": 1444.7,
+      "overloadThresholdW": 2000,
+      "loadPowerThresholdW": 1,
+      "loadCurrentThresholdA": 0.02,
+      "loadRemovedDelaySec": 3,
+      "revision": 1
+    },
+    "live": {
+      "deviceId": "voltix-001",
+      "operatingMode": "OFFLINE",
+      "networkState": "DISCONNECTED",
+      "sessionState": "IDLE",
+      "relayOn": false,
+      "alarmLatched": false,
+      "heartbeat": 0
+    }
+  }
+}

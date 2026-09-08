@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+ <meta
+  name="viewport"
+  content="width=device-width,initial-scale=1,viewport-fit=cover"
+>
+<meta name="theme-color" content="#071015">
+  <meta name="description" content="Dashboard monitoring energi VOLTIX V2">
+  <title>VOLTIX V2 · Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/v2.css?v=20260908-1">
+</head>
+<body class="dashboard-page">
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-content">
+      <header class="topbar" id="topbar"></header>
+      <main class="page-content dashboard-shell">
+        <div id="overload-banner" class="dashboard-alert dashboard-alert-overload">
+          <strong>Proteksi overload aktif</strong><span>Relay telah dimatikan. Tekan tombol OK pada alat untuk mematikan alarm.</span>
+        </div>
+        <div id="offline-banner" class="dashboard-alert dashboard-alert-offline">
+          <strong>Monitoring offline</strong><span>Alat tetap merekam sesi secara lokal.</span>
+        </div>
+
+       <header class="dashboard-heading">
+  <h1>Dashboard Energi</h1>
+
+  <button
+    id="btn-stop"
+    class="btn btn-danger dashboard-stop-button"
+    type="button"
+  >
+    Stop Session
+  </button>
+</header>
+
+        <section class="dashboard-command-panel" aria-label="Status dan perintah alat">
+          <div class="command-panel-orb" aria-hidden="true"></div>
+          <div class="command-panel-main"><div class="dashboard-eyebrow">Perangkat aktif</div><strong>VOLTIX-001</strong><span class="command-panel-note" id="command-note">Menunggu data dari ESP32…</span></div>
+          <div class="command-panel-grid">
+            <div class="command-panel-pill"><span>Mode</span><strong id="hero-mode">—</strong></div>
+            <div class="command-panel-pill"><span>Session</span><strong id="hero-session">IDLE</strong></div>
+            <div class="command-panel-pill"><span>Relay</span><strong id="hero-relay">OFF</strong></div>
+            <div class="command-panel-pill"><span>Jaringan</span><strong id="hero-network">WAITING</strong></div>
+          </div>
+          <div class="command-panel-actions"><button class="btn btn-primary btn-command-start" id="btn-start" type="button">Start Monitoring</button></div>
+        </section>
+
+        <section class="dashboard-hero" aria-label="Pembacaan listrik langsung">
+          <article class="power-focus-card">
+            <div class="power-focus-top"><div><div class="dashboard-card-kicker">Live demand</div><div class="power-focus-label">Daya</div></div><div class="badge transition" id="device-badge">MENUNGGU</div></div>
+            <div class="power-focus-reading"><span class="metric-value" id="val-power">0.0</span><small>W</small></div>
+            <div class="power-signal" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="hero-status-grid">
+              <div class="hero-status-item"><span>Beban</span><strong id="val-load-detected">Tidak terdeteksi</strong><small>Status threshold PZEM</small></div>
+              <div class="hero-status-item"><span>Alarm</span><strong id="val-alarm">Normal</strong><small>Proteksi daya</small></div>
+              <div class="hero-status-item"><span>Sinkronisasi</span><strong id="val-pending-sync">0 pending</strong><small>Histori lokal</small></div>
+              <div class="hero-status-item"><span>Pembaruan</span><strong id="val-heartbeat">—</strong><small>Heartbeat terakhir</small></div>
+            </div>
+          </article>
+
+          <div class="hero-gauges">
+            <article class="gauge-card dashboard-gauge-card"><div class="gauge-heading"><div><div class="dashboard-card-kicker">AC input</div><div class="gauge-label">Tegangan</div></div><span class="gauge-range">0–250 V</span></div><div class="gauge-wrap"><svg class="gauge-svg" viewBox="0 0 180 100" aria-hidden="true"><path class="gauge-track" d="M 16,90 A 74,74 0 0,1 164,90"/><path class="gauge-fill" id="gauge-voltage" stroke="var(--cyan)" stroke-dasharray="232" stroke-dashoffset="232" d="M 16,90 A 74,74 0 0,1 164,90"/></svg><div class="gauge-value-wrap"><div class="gauge-value metric-value" id="val-voltage">0.0</div><div class="gauge-unit">VOLT</div></div></div><div class="gauge-scale"><span>LOW</span><span>NOMINAL</span><span>HIGH</span></div></article>
+            <article class="gauge-card dashboard-gauge-card"><div class="gauge-heading"><div><div class="dashboard-card-kicker">Load draw</div><div class="gauge-label">Arus</div></div><span class="gauge-range">0–16 A</span></div><div class="gauge-wrap"><svg class="gauge-svg" viewBox="0 0 180 100" aria-hidden="true"><path class="gauge-track" d="M 16,90 A 74,74 0 0,1 164,90"/><path class="gauge-fill" id="gauge-current" stroke="var(--green)" stroke-dasharray="232" stroke-dashoffset="232" d="M 16,90 A 74,74 0 0,1 164,90"/></svg><div class="gauge-value-wrap"><div class="gauge-value metric-value" id="val-current">0.000</div><div class="gauge-unit">AMPERE</div></div></div><div class="gauge-scale"><span>IDLE</span><span>ACTIVE</span><span>LIMIT</span></div></article>
+          </div>
+        </section>
+
+        <section class="dashboard-section">
+          <div class="dashboard-section-heading"><div><div class="dashboard-eyebrow">Current session</div><h2>Ringkasan Sesi</h2></div><span class="system-stamp" id="session-id">Belum ada sesi</span></div>
+          <div class="dashboard-summary-grid">
+            <article class="summary-card cyan"><span>Energi</span><strong><b id="val-energy">0.000</b><small> kWh</small></strong><p>Akumulasi sesi</p></article>
+            <article class="summary-card amber"><span>Estimasi biaya</span><strong id="val-cost">Rp0</strong><p>Berdasarkan tarif aktif</p></article>
+            <article class="summary-card green">
+  <span id="duration-label">Durasi monitoring</span>
+
+  <strong
+    class="summary-duration"
+    id="val-duration"
+  >
+    00:00:00
+  </strong>
+
+  <p id="duration-note">
+    Dimulai setelah validasi beban
+  </p>
+</article>
+            <article class="summary-card violet"><span>Daya puncak</span><strong><b id="val-peak">0.0</b><small> W</small></strong><p>Nilai tertinggi sesi</p></article>
+            <article class="summary-card device-summary-card"><span>Nama beban</span><strong class="summary-device-name" id="val-load-name">—</strong><p id="history-count">0 sesi tersimpan</p></article>
+          </div>
+        </section>
+
+        <section class="dashboard-section">
+          <div class="dashboard-section-heading"><div><div class="dashboard-eyebrow">Analytics</div><h2>Grafik Daya Realtime</h2></div></div>
+          <div class="dashboard-chart-grid">
+            <article class="chart-card chart-inner chart-card-wide"><div class="chart-card-header"><div><div class="dashboard-card-kicker">60 sampel terakhir</div><div class="chart-card-title">Power Over Time</div></div><span class="chart-unit">WATTS</span></div><div class="chart-stage chart-stage-wide"><canvas id="power-chart"></canvas></div></article>
+            <article class="chart-card chart-inner usage-chart-card">
+  <div class="chart-card-header">
+    <div class="chart-card-title">Energi per Beban</div>
+  </div>
+
+  <div class="usage-chart-stage">
+    <canvas id="usage-pie-chart"></canvas>
+
+    <div id="usage-pie-empty" class="usage-pie-empty" hidden>
+      Belum ada data energi.
+    </div>
+  </div>
+</article>
+            <article class="advanced-reading-card green"><span>Power factor</span><strong><b id="val-pf">0.00</b></strong><p>Efisiensi beban</p></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="start-modal" role="dialog" aria-modal="true" aria-labelledby="start-title">
+    <form class="modal-card" id="start-form">
+      <div class="modal-title" id="start-title">Mulai Monitoring</div>
+      <div class="modal-sub">Masukkan nama beban yang akan diukur.</div>
+      <label class="form-label" for="load-name">Nama beban</label>
+      <input class="form-input" id="load-name" maxlength="31" placeholder="Contoh: Kipas Angin" required autocomplete="off">
+      <div class="form-hint">Relay akan ON dan alat memvalidasi beban sekitar 5 detik.</div>
+      <div class="modal-footer"><button class="btn btn-ghost" id="btn-cancel" type="button">Batal</button><button class="btn btn-primary" type="submit">Mulai</button></div>
+    </form>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script
+  type="module"
+  src="js/dashboard.js?v=20260907-9"
+></script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+ <meta
+  name="viewport"
+  content="width=device-width,initial-scale=1,viewport-fit=cover"
+>
+<meta name="theme-color" content="#071015">
+  <meta name="description" content="Histori monitoring VOLTIX">
+  <title>VOLTIX · Histori</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/v2.css?v=20260908-1">
+</head>
+
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <div class="main-content">
+      <header class="topbar" id="topbar"></header>
+
+      <main class="page-content page-stack">
+        <header class="page-head">
+          <h1>Histori</h1>
+
+          <div class="page-actions">
+            <button class="btn btn-ghost" id="btn-export" type="button">
+              Export CSV
+            </button>
+
+            <button class="btn btn-danger" id="btn-delete-all" type="button">
+              Hapus Semua
+            </button>
+          </div>
+        </header>
+
+        <section class="stat-grid">
+          <article class="stat-card cyan">
+            <div class="stat-label">Total sesi</div>
+            <div class="stat-value" id="sum-count">0</div>
+          </article>
+
+          <article class="stat-card green">
+            <div class="stat-label">Total energi</div>
+            <div>
+              <span class="stat-value" id="sum-energy">0.0000</span>
+              <span class="stat-unit">kWh</span>
+            </div>
+          </article>
+
+          <article class="stat-card amber">
+            <div class="stat-label">Total biaya</div>
+            <div class="stat-value" id="sum-cost">Rp0</div>
+          </article>
+
+          <article class="stat-card red">
+            <div class="stat-label">Overload</div>
+            <div class="stat-value" id="sum-overload">0</div>
+          </article>
+        </section>
+
+        <section class="card data-card">
+          <div class="data-toolbar">
+            <strong id="history-status">Memuat histori…</strong>
+
+            <input
+              class="search-input"
+              id="search"
+              placeholder="Cari nama beban"
+              aria-label="Cari nama beban"
+            >
+          </div>
+
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Waktu</th>
+                  <th>Nama beban</th>
+                  <th>Mode</th>
+                  <th>Durasi</th>
+                  <th>Energi</th>
+                  <th>Biaya</th>
+                  <th>Daya puncak</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+
+              <tbody id="history-body">
+                <tr>
+                  <td colspan="9" class="empty-row">Belum ada histori.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div
+    class="modal-overlay"
+    id="history-detail-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="history-detail-title"
+  >
+    <article class="modal-card history-detail-card">
+      <header class="history-detail-header">
+        <div>
+          <div class="modal-title" id="history-detail-title">
+            Detail Histori
+          </div>
+          <strong id="detail-load">—</strong>
+        </div>
+
+        <button
+          class="history-modal-close"
+          id="history-detail-close"
+          type="button"
+          aria-label="Tutup detail"
+        >
+          ×
+        </button>
+      </header>
+
+      <div class="history-detail-grid">
+        <div class="history-detail-item">
+          <span>Waktu selesai</span>
+          <strong id="detail-time">—</strong>
+        </div>
+
+        <div class="history-detail-item">
+          <span>Mode</span>
+          <strong id="detail-mode">—</strong>
+        </div>
+
+        <div class="history-detail-item">
+          <span>Durasi</span>
+          <strong id="detail-duration">—</strong>
+        </div>
+
+        <div class="history-detail-item">
+          <span>Energi</span>
+          <strong id="detail-energy">—</strong>
+        </div>
+
+        <div class="history-detail-item">
+          <span>Biaya</span>
+          <strong id="detail-cost">—</strong>
+        </div>
+
+        <div class="history-detail-item">
+          <span>Daya rata-rata</span>
+          <strong id="detail-average">—</strong>
+        </div>
+
+        <div class="history-detail-item">
+          <span>Daya puncak</span>
+          <strong id="detail-peak">—</strong>
+        </div>
+
+        <div class="history-detail-item">
+          <span>Tegangan terakhir</span>
+          <strong id="detail-voltage">—</strong>
+        </div>
+
+        <div class="history-detail-item">
+          <span>Arus terakhir</span>
+          <strong id="detail-current">—</strong>
+        </div>
+
+        <div class="history-detail-item">
+          <span>Frekuensi</span>
+          <strong id="detail-frequency">—</strong>
+        </div>
+
+        <div class="history-detail-item">
+          <span>Power factor</span>
+          <strong id="detail-pf">—</strong>
+        </div>
+
+        <div class="history-detail-item">
+          <span>Recovery</span>
+          <strong id="detail-recovered">—</strong>
+        </div>
+
+        <div class="history-detail-item history-detail-wide">
+          <span>Alasan selesai</span>
+          <strong id="detail-reason">—</strong>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <script type="module" src="js/history.js?v=20260907-8"></script>
+</body>
+</html>

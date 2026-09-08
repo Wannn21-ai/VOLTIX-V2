@@ -1,0 +1,11 @@
+.pio/
+.vscode/
+firmware/include/credentials.h
+node_modules/
+*.zip
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+dist/

@@ -1,0 +1,9 @@
+{
+  "name": "voltix-v2",
+  "private": true,
+  "version": "2.0.0",
+  "scripts": {
+    "build:web": "node scripts/build-web.mjs",
+    "test:web": "node scripts/validate-web.mjs"
+  }
+}
