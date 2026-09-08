@@ -762,3 +762,22 @@ textarea {
     overflow-y: auto;
   }
 }
+
+.start-duration-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) minmax(120px, .45fr);
+  gap: .85rem;
+  margin-top: 1rem;
+}
+
+.start-duration-grid > div {
+  display: grid;
+  gap: .4rem;
+}
+
+@media (max-width: 480px) {
+  .start-duration-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -5,7 +5,7 @@
 namespace Config {
 constexpr const char* PROJECT_NAME = "VOLTIX";
 constexpr const char* DEVICE_ID = "voltix-001";
-constexpr const char* FIRMWARE_VERSION = "2.0.1-presentation";
+constexpr const char* FIRMWARE_VERSION = "2.1.0-presentation";
 constexpr const char* FIREBASE_DATABASE_URL =
   "https://voltv1-default-rtdb.asia-southeast1.firebasedatabase.app";
 
@@ -28,6 +28,9 @@ constexpr float DEFAULT_OVERLOAD_W = 2000.0f;
 constexpr float DEFAULT_LOAD_POWER_W = 1.0f;
 constexpr float DEFAULT_LOAD_CURRENT_A = 0.02f;
 constexpr uint16_t DEFAULT_LOAD_REMOVED_DELAY_SEC = 3;
+constexpr uint32_t MIN_TIMED_DURATION_SEC = 60;
+constexpr uint32_t MAX_TIMED_DURATION_SEC =
+    24UL * 60UL * 60UL;
 constexpr float AC_PRESENT_MIN_VOLTAGE = 180.0f;
 
 constexpr uint32_t SENSOR_INTERVAL_MS = 1000;

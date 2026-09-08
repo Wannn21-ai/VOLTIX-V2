@@ -72,6 +72,7 @@ function reasonText(reason) {
     LOAD_REMOVED_AFTER_POWER_LOSS: "Beban dilepas setelah listrik padam",
     OVERLOAD: "Proteksi overload",
     NO_LOAD_DETECTED: "Beban tidak terdeteksi",
+    TIMER_COMPLETED: "Waktu monitoring selesai",
     SYSTEM_RESET: "Reset sistem"
   };
 
@@ -106,6 +107,24 @@ function updateDetail(item) {
     "detail-duration",
     formatDuration(item.durationSec)
   );
+
+  const timed =
+  item.timed === true ||
+  Number(item.requestedDurationSec || 0) > 0;
+
+setDetailText(
+  "detail-timed",
+  timed ? "Bertimer" : "Tanpa batas"
+);
+
+setDetailText(
+  "detail-requested-duration",
+  timed
+    ? formatDuration(
+        item.requestedDurationSec
+      )
+    : "—"
+);
 
   setDetailText(
     "detail-energy",
@@ -477,6 +496,8 @@ $("btn-export").addEventListener("click", () => {
     "cost",
     "averagePowerW",
     "peakPowerW",
+    "timed",
+"requestedDurationSec",
     "endReason"
   ];
 

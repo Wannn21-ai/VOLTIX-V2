@@ -77,13 +77,49 @@ void handleMenuButtons(bool navPressed, bool okPressed) {
 
 void handleCommand(const CloudCommand& command) {
   if (command.type == "START") {
-    if (sessionStart(command.loadName)) {
-      cloudAcknowledge(command, "ACCEPTED", "START diterima; validasi beban dimulai.");
-    } else {
-      cloudAcknowledge(command, "REJECTED", "Alat belum siap memulai sesi baru.");
+    if (
+        command.durationSec > 0 &&
+        (
+            command.durationSec <
+                Config::MIN_TIMED_DURATION_SEC ||
+            command.durationSec >
+                Config::MAX_TIMED_DURATION_SEC
+        )
+    ) {
+        cloudAcknowledge(
+            command,
+            "REJECTED",
+            "Durasi harus 1 menit sampai 24 jam."
+        );
+
+        return;
     }
+
+    if (
+        sessionStart(
+            command.loadName,
+            command.durationSec
+        )
+    ) {
+        cloudAcknowledge(
+            command,
+            "ACCEPTED",
+            command.durationSec > 0
+                ? "START diterima; timer dimulai "
+                  "setelah validasi beban."
+                : "START diterima; validasi "
+                  "beban dimulai."
+        );
+    } else {
+        cloudAcknowledge(
+            command,
+            "REJECTED",
+            "Alat belum siap memulai sesi baru."
+        );
+    }
+
     return;
-  }
+}
   if (command.type == "STOP") {
     if (sessionIsActive()) {
       sessionStop(EndReason::USER_STOP);

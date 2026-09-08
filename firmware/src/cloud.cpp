@@ -106,6 +106,14 @@ bool cloudPublishLive(bool force) {
   session["state"] = sessionStateText(currentSession.state);
   session["endReason"] = endReasonText(currentSession.endReason);
   session["durationSec"] = currentSession.durationSec;
+  session["timed"] =
+    currentSession.timed;
+
+session["durationLimitSec"] =
+    currentSession.durationLimitSec;
+
+session["remainingSec"] =
+    sessionRemainingSec();
   session["validationRemainingMs"] =
   sessionValidationRemainingMs();
   session["energyWh"] = currentSession.energyWh;
@@ -158,6 +166,8 @@ bool cloudPollCommand(CloudCommand& command) {
   command.id = id;
   command.type = document["type"].as<String>();
   command.loadName = document["loadName"].as<String>();
+  command.durationSec =
+    document["durationSec"] | 0U;
   command.createdAt = document["createdAt"] | static_cast<uint64_t>(0);
   command.type.toUpperCase();
 

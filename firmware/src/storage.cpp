@@ -84,6 +84,11 @@ bool storageSaveCheckpoint() {
   document["state"] = sessionStateText(currentSession.state);
   document["startedAtEpochMs"] = currentSession.startedAtEpochMs;
   document["durationSec"] = currentSession.durationSec;
+  document["timed"] =
+    currentSession.timed;
+
+document["durationLimitSec"] =
+    currentSession.durationLimitSec;
   document["energyWh"] = currentSession.energyWh;
   document["cost"] = currentSession.cost;
   document["peakPowerW"] = currentSession.peakPowerW;
@@ -105,6 +110,15 @@ bool storageLoadCheckpoint(SessionData& session) {
   session.startedAtEpochMs = document["startedAtEpochMs"] | static_cast<uint64_t>(0);
   session.durationSec = document["durationSec"] | 0U;
   session.recoveredDurationSec = session.durationSec;
+  session.timed =
+    document["timed"] | false;
+
+session.durationLimitSec =
+    document["durationLimitSec"] | 0U;
+
+if (session.durationLimitSec == 0) {
+    session.timed = false;
+}
   session.energyWh = document["energyWh"] | 0.0f;
   session.baseEnergyWh = session.energyWh;
   session.cost = document["cost"] | 0.0f;
@@ -135,6 +149,11 @@ bool storageAppendHistory(const SessionData& session, const SensorReading& lastR
   document["startedAt"] = session.startedAtEpochMs;
   document["endedAt"] = session.endedAtEpochMs;
   document["durationSec"] = session.durationSec;
+  document["timed"] =
+    session.timed;
+
+document["requestedDurationSec"] =
+    session.durationLimitSec;
   document["energyWh"] = session.energyWh;
   document["energyKwh"] = session.energyWh / 1000.0f;
   document["cost"] = session.cost;

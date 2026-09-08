@@ -68,6 +68,8 @@ const char* endReasonText(EndReason value) {
     case EndReason::OVERLOAD: return "OVERLOAD";
     case EndReason::NO_LOAD_DETECTED: return "NO_LOAD_DETECTED";
     case EndReason::SYSTEM_RESET: return "SYSTEM_RESET";
+    case EndReason::TIMER_COMPLETED:
+    return "TIMER_COMPLETED";
   }
   return "UNKNOWN";
 }

@@ -14,13 +14,14 @@ enum class SessionState : uint8_t {
   ERROR
 };
 enum class EndReason : uint8_t {
-  NONE,
-  USER_STOP,
-  LOAD_REMOVED,
-  LOAD_REMOVED_AFTER_POWER_LOSS,
-  OVERLOAD,
-  NO_LOAD_DETECTED,
-  SYSTEM_RESET
+    NONE,
+    USER_STOP,
+    LOAD_REMOVED,
+    LOAD_REMOVED_AFTER_POWER_LOSS,
+    OVERLOAD,
+    NO_LOAD_DETECTED,
+    TIMER_COMPLETED,
+    SYSTEM_RESET
 };
 enum class MenuScreen : uint8_t { NONE, BOOT, OFFLINE_NEXT, RESET_CONFIRM };
 enum class SessionEvent : uint8_t {
@@ -67,6 +68,8 @@ struct SessionData {
   uint64_t endedAtEpochMs = 0;
   uint32_t durationSec = 0;
   uint32_t recoveredDurationSec = 0;
+  bool timed = false;
+  uint32_t durationLimitSec = 0;
   float startEnergyKwh = 0;
   float baseEnergyWh = 0;
   float energyWh = 0;
@@ -78,8 +81,9 @@ struct SessionData {
 };
 
 struct CloudCommand {
-  String id;
-  String type;
-  String loadName;
-  uint64_t createdAt = 0;
+    String id;
+    String type;
+    String loadName;
+    uint32_t durationSec = 0;
+    uint64_t createdAt = 0;
 };

@@ -130,6 +130,48 @@
     <form class="modal-card" id="start-form">
       <div class="modal-title" id="start-title">Mulai Monitoring</div>
       <div class="modal-sub">Masukkan nama beban yang akan diukur.</div>
+      <div class="start-duration-grid">
+  <div>
+    <label
+      class="form-label"
+      for="monitoring-duration"
+    >
+      Durasi (opsional)
+    </label>
+
+    <input
+      class="form-input"
+      id="monitoring-duration"
+      type="number"
+      min="1"
+      step="1"
+      inputmode="numeric"
+      placeholder="Tanpa batas"
+    >
+  </div>
+
+  <div>
+    <label
+      class="form-label"
+      for="duration-unit"
+    >
+      Satuan
+    </label>
+
+    <select
+      class="form-input"
+      id="duration-unit"
+    >
+      <option value="60">Menit</option>
+      <option value="3600">Jam</option>
+    </select>
+  </div>
+</div>
+
+<div class="form-hint">
+  Kosongkan durasi untuk monitoring tanpa batas.
+  Timer dimulai setelah validasi beban 5 detik.
+</div>
       <label class="form-label" for="load-name">Nama beban</label>
       <input class="form-input" id="load-name" maxlength="31" placeholder="Contoh: Kipas Angin" required autocomplete="off">
       <div class="form-hint">Relay akan ON dan alat memvalidasi beban sekitar 5 detik.</div>
@@ -137,9 +179,9 @@
     </form>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-  <script
+<script
   type="module"
-  src="js/dashboard.js?v=20260907-9"
+  src="js/dashboard.js?v=20260908-2"
 ></script>
 </body>
 </html>

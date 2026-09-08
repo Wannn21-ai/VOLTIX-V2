@@ -34,19 +34,60 @@ void emit(SessionEvent event) {
 }
 
 void updateTotals() {
-  if (currentSession.state != SessionState::MONITORING) return;
-  const uint32_t now = millis();
-  currentSession.durationSec = currentSession.recoveredDurationSec +
-    ((now - currentSession.startedAtMs) / 1000U);
-  float deltaKwh = sensorReading.energy - currentSession.startEnergyKwh;
-  if (deltaKwh < 0 || !sensorReading.valid) deltaKwh = 0;
-  currentSession.energyWh = currentSession.baseEnergyWh + deltaKwh * 1000.0f;
-  currentSession.cost = (currentSession.energyWh / 1000.0f) * runtimeConfig.tariffPerKwh;
-  if (sensorReading.valid && sensorReading.power > currentSession.peakPowerW) {
-    currentSession.peakPowerW = sensorReading.power;
-  }
-  currentSession.averagePowerW = currentSession.durationSec > 0
-    ? currentSession.energyWh * 3600.0f / currentSession.durationSec : 0.0f;
+    if (
+        currentSession.state !=
+        SessionState::MONITORING
+    ) {
+        return;
+    }
+
+    const uint32_t now = millis();
+
+    uint32_t elapsedSec =
+        currentSession.recoveredDurationSec +
+        ((now - currentSession.startedAtMs) / 1000U);
+
+    if (
+        currentSession.timed &&
+        currentSession.durationLimitSec > 0 &&
+        elapsedSec > currentSession.durationLimitSec
+    ) {
+        elapsedSec =
+            currentSession.durationLimitSec;
+    }
+
+    currentSession.durationSec = elapsedSec;
+
+    float deltaKwh =
+        sensorReading.energy -
+        currentSession.startEnergyKwh;
+
+    if (deltaKwh < 0 || !sensorReading.valid) {
+        deltaKwh = 0;
+    }
+
+    currentSession.energyWh =
+        currentSession.baseEnergyWh +
+        deltaKwh * 1000.0f;
+
+    currentSession.cost =
+        (currentSession.energyWh / 1000.0f) *
+        runtimeConfig.tariffPerKwh;
+
+    if (
+        sensorReading.valid &&
+        sensorReading.power >
+            currentSession.peakPowerW
+    ) {
+        currentSession.peakPowerW =
+            sensorReading.power;
+    }
+
+    currentSession.averagePowerW =
+        currentSession.durationSec > 0
+            ? currentSession.energyWh * 3600.0f /
+                currentSession.durationSec
+            : 0.0f;
 }
 
 void finishSession(EndReason reason) {
@@ -133,34 +174,90 @@ bool sessionRecoverIfAvailable() {
   return true;
 }
 
-bool sessionStart(const String& loadName) {
-  if (sessionIsActive() || alarmLatched || currentSession.state == SessionState::ERROR) return false;
-  currentSession = SessionData();
-  currentSession.id = makeSessionId();
-  currentSession.loadName = loadName.length() ? loadName.substring(0, 31) : "Tanpa Nama";
-  currentSession.startMode = operatingMode;
-  currentSession.state = SessionState::VALIDATING_LOAD;
-  currentSession.startedAtEpochMs = epochMillis();
-  validationStartedMs = millis();
-  stableLoadSamples = 0;
-  noLoadStartedMs = 0;
-  lastCheckpointMs = validationStartedMs;
-  validationCountdownStarted = false;
-  finishedAtMs = 0;
-  hardwareSetRelay(true);
-  storageSaveCheckpoint();
-  emit(SessionEvent::VALIDATION_STARTED);
-  Serial.printf("[session] validation started id=%s load=%s mode=%s\n",
-                currentSession.id.c_str(), currentSession.loadName.c_str(),
-                operatingModeText(currentSession.startMode));
-  return true;
+bool sessionStart(
+    const String& loadName,
+    uint32_t durationLimitSec
+) {
+    if (
+        sessionIsActive() ||
+        alarmLatched ||
+        currentSession.state == SessionState::ERROR
+    ) {
+        return false;
+    }
+
+    if (
+        durationLimitSec > 0 &&
+        (
+            operatingMode != OperatingMode::ONLINE ||
+            durationLimitSec <
+                Config::MIN_TIMED_DURATION_SEC ||
+            durationLimitSec >
+                Config::MAX_TIMED_DURATION_SEC
+        )
+    ) {
+        Serial.println(
+            "[session] rejected invalid timed duration"
+        );
+
+        return false;
+    }
+
+    currentSession = SessionData();
+
+    currentSession.id = makeSessionId();
+
+    currentSession.loadName =
+        loadName.length()
+            ? loadName.substring(0, 31)
+            : "Tanpa Nama";
+
+    currentSession.startMode = operatingMode;
+    currentSession.state =
+        SessionState::VALIDATING_LOAD;
+
+    currentSession.startedAtEpochMs =
+        epochMillis();
+
+    currentSession.timed =
+        durationLimitSec > 0;
+
+    currentSession.durationLimitSec =
+        currentSession.timed
+            ? durationLimitSec
+            : 0;
+
+    validationStartedMs = millis();
+    stableLoadSamples = 0;
+    noLoadStartedMs = 0;
+    lastCheckpointMs = validationStartedMs;
+    validationCountdownStarted = false;
+    finishedAtMs = 0;
+
+    hardwareSetRelay(true);
+    storageSaveCheckpoint();
+
+    emit(SessionEvent::VALIDATION_STARTED);
+
+    Serial.printf(
+        "[session] validation started "
+        "id=%s load=%s mode=%s timer=%lu\n",
+        currentSession.id.c_str(),
+        currentSession.loadName.c_str(),
+        operatingModeText(currentSession.startMode),
+        static_cast<unsigned long>(
+            currentSession.durationLimitSec
+        )
+    );
+
+    return true;
 }
 
 bool sessionStartOfflineNext() {
   operatingMode = OperatingMode::OFFLINE;
   const String name = String("Offline Device ") + String(storageHistoryCount() + 1);
   sessionSetIdle();
-  return sessionStart(name);
+  return sessionStart(name, 0);
 }
 
 void sessionStop(EndReason reason) {
@@ -260,79 +357,99 @@ void sessionUpdate(bool freshSensorSample) {
   // ==========================================================
   // MONITORING
   // ==========================================================
-  if (
+if (
     currentSession.state ==
     SessionState::MONITORING
-  ) {
+) {
     updateTotals();
 
+    /*
+     * Overload diperiksa lebih dahulu agar proteksi
+     * tetap memiliki prioritas dibanding timer.
+     */
     if (
-      now - lastCheckpointMs >=
-      Config::CHECKPOINT_INTERVAL_MS
+        freshSensorSample &&
+        sensorReading.valid &&
+        sensorReading.power >=
+            runtimeConfig.overloadThresholdW
     ) {
-      lastCheckpointMs = now;
-      storageSaveCheckpoint();
+        finishSession(EndReason::OVERLOAD);
+        return;
     }
 
     if (
-      !freshSensorSample ||
-      !sensorReading.valid
+        currentSession.timed &&
+        currentSession.durationLimitSec > 0 &&
+        currentSession.durationSec >=
+            currentSession.durationLimitSec
     ) {
-      return;
+        finishSession(
+            EndReason::TIMER_COMPLETED
+        );
+
+        return;
     }
 
     if (
-      sensorReading.power >=
-      runtimeConfig.overloadThresholdW
+        now - lastCheckpointMs >=
+        Config::CHECKPOINT_INTERVAL_MS
     ) {
-      finishSession(EndReason::OVERLOAD);
-      return;
+        lastCheckpointMs = now;
+        storageSaveCheckpoint();
+    }
+
+    if (
+        !freshSensorSample ||
+        !sensorReading.valid
+    ) {
+        return;
     }
 
     const bool acPresent =
-      sensorReading.voltage >=
-      Config::AC_PRESENT_MIN_VOLTAGE;
+        sensorReading.voltage >=
+        Config::AC_PRESENT_MIN_VOLTAGE;
 
     if (!acPresent) {
-      currentSession.powerLossObserved = true;
-      noLoadStartedMs = 0;
-      storageSaveCheckpoint();
-      return;
+        currentSession.powerLossObserved = true;
+        noLoadStartedMs = 0;
+        storageSaveCheckpoint();
+        return;
     }
 
     const bool belowThreshold =
-      sensorReading.power <
-        runtimeConfig.loadPowerThresholdW &&
-      sensorReading.current <
-        runtimeConfig.loadCurrentThresholdA;
+        sensorReading.power <
+            runtimeConfig.loadPowerThresholdW &&
+        sensorReading.current <
+            runtimeConfig.loadCurrentThresholdA;
 
     if (!belowThreshold) {
-      noLoadStartedMs = 0;
-      return;
+        noLoadStartedMs = 0;
+        return;
     }
 
     if (noLoadStartedMs == 0) {
-      noLoadStartedMs = now;
+        noLoadStartedMs = now;
     }
 
     const uint32_t removeDelayMs =
-      static_cast<uint32_t>(
-        runtimeConfig.loadRemovedDelaySec
-      ) * 1000U;
+        static_cast<uint32_t>(
+            runtimeConfig.loadRemovedDelaySec
+        ) * 1000U;
 
     if (
-      now - noLoadStartedMs >=
-      removeDelayMs
+        now - noLoadStartedMs >=
+        removeDelayMs
     ) {
-      finishSession(
-        currentSession.powerLossObserved
-          ? EndReason::LOAD_REMOVED_AFTER_POWER_LOSS
-          : EndReason::LOAD_REMOVED
-      );
+        finishSession(
+            currentSession.powerLossObserved
+                ? EndReason::
+                    LOAD_REMOVED_AFTER_POWER_LOSS
+                : EndReason::LOAD_REMOVED
+        );
     }
 
     return;
-  }
+}
 
   // ==========================================================
   // SELESAI
@@ -415,4 +532,19 @@ uint32_t sessionValidationRemainingMs() {
   return
     Config::LOAD_VALIDATION_TIMEOUT_MS -
     elapsed;
+}
+
+uint32_t sessionRemainingSec() {
+    if (
+        !currentSession.timed ||
+        currentSession.durationLimitSec == 0 ||
+        currentSession.durationSec >=
+            currentSession.durationLimitSec
+    ) {
+        return 0;
+    }
+
+    return
+        currentSession.durationLimitSec -
+        currentSession.durationSec;
 }
