@@ -30,21 +30,45 @@ void performReset() {
   ESP.restart();
 }
 
-void handleBootSelection() {
-  if (menuIndex == 0) {
-    menuScreen = MenuScreen::NONE;
-    networkStartOnline();
-    return;
-  }
-  if (menuIndex == 1) {
-    menuScreen = MenuScreen::NONE;
-    networkEnterManualOffline();
-    sessionStartOfflineNext();
-    return;
-  }
-  menuScreen = MenuScreen::RESET_CONFIRM;
-  menuIndex = 0;
-  resetConfirmationActive = true;
+void handleBootSelection()
+{
+    if (menuIndex == 0)
+    {
+        menuScreen = MenuScreen::NONE;
+        menuIndex = 0;
+
+        networkStartOnline();
+        return;
+    }
+
+    if (menuIndex == 1)
+    {
+        menuScreen = MenuScreen::NONE;
+        menuIndex = 0;
+
+        networkEnterManualOffline();
+
+        if (!sessionStartOfflineNext())
+        {
+            Serial.println(
+                "[ui] gagal memulai sesi offline"
+            );
+
+            enterBootMenu();
+        }
+        else
+        {
+            Serial.println(
+                "[ui] menu ditutup; menampilkan validasi offline"
+            );
+        }
+
+        return;
+    }
+
+    menuScreen = MenuScreen::RESET_CONFIRM;
+    menuIndex = 0;
+    resetConfirmationActive = true;
 }
 
 void handleMenuButtons(bool navPressed, bool okPressed) {

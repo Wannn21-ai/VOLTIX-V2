@@ -185,6 +185,9 @@ bool sessionStart(
     ) {
         return false;
     }
+    // Sesi baru selalu mengambil alih tampilan OLED.
+        menuScreen = MenuScreen::NONE;
+        menuIndex = 0;
 
     if (
         durationLimitSec > 0 &&
@@ -253,11 +256,28 @@ bool sessionStart(
     return true;
 }
 
-bool sessionStartOfflineNext() {
-  operatingMode = OperatingMode::OFFLINE;
-  const String name = String("Offline Device ") + String(storageHistoryCount() + 1);
-  sessionSetIdle();
-  return sessionStart(name, 0);
+bool sessionStartOfflineNext()
+{
+    operatingMode = OperatingMode::OFFLINE;
+
+    const String name =
+        String("Offline Device ") +
+        String(storageHistoryCount() + 1);
+
+    sessionSetIdle();
+
+    const bool started =
+        sessionStart(name, 0);
+
+    if (started)
+    {
+        // Pastikan OLED tidak tetap berada
+        // pada tampilan pemilihan mode.
+        menuScreen = MenuScreen::NONE;
+        menuIndex = 0;
+    }
+
+    return started;
 }
 
 void sessionStop(EndReason reason) {
